@@ -1,0 +1,198 @@
+/* ============================================================
+   ESTILOS GLOBAIS — Centro de Comando HMJLO
+   Arquivo: estilos/global.css
+   ============================================================ */
+
+/* ── Scrollbar customizada ── */
+.custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.dark .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+
+/* ── Transição de abas ── */
+.tab-content { display: none; animation: fadeIn 0.25s ease-out forwards; }
+.tab-content.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Alertas críticos ── */
+.alert-pulse { animation: pulseRed 2s infinite; }
+@keyframes pulseRed {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,.7); }
+  70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+/* ── Dark Mode ── */
+.dark body { background-color: #0f172a; color: #e2e8f0; }
+.dark aside { background-color: #1e293b; border-color: #334155; }
+.dark .bg-white { background-color: #1e293b; }
+.dark .bg-gray-50 { background-color: #0f172a; }
+.dark .bg-gray-100 { background-color: #1e293b; }
+.dark .bg-gray-50\/50 { background-color: rgba(30,41,59,.5); }
+.dark .border-gray-100 { border-color: #334155; }
+.dark .border-gray-200 { border-color: #334155; }
+.dark .text-gray-800 { color: #e2e8f0; }
+.dark .text-gray-700 { color: #cbd5e1; }
+.dark .text-gray-600 { color: #94a3b8; }
+.dark .text-gray-500 { color: #64748b; }
+.dark .divide-gray-100 > * { border-color: #334155; }
+.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.dark .hover\:bg-brand-50\/40:hover { background-color: rgba(20,184,166,.08); }
+.dark input, .dark select, .dark textarea {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+.dark input::placeholder { color: #64748b; }
+.dark .nav-btn:hover { background-color: rgba(255,255,255,.05) !important; }
+.dark .bg-red-50 { background-color: rgba(254,242,242,.05); }
+.dark .bg-blue-50 { background-color: rgba(239,246,255,.05); }
+.dark .bg-green-50 { background-color: rgba(240,253,244,.05); }
+.dark .bg-orange-50 { background-color: rgba(255,247,237,.05); }
+.dark .bg-teal-50 { background-color: rgba(240,253,250,.05); }
+.dark .bg-purple-50 { background-color: rgba(250,245,255,.05); }
+.dark .bg-gray-100 { background-color: #1e293b; }
+
+/* ── Tela de Login ── */
+#login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 40%, #14b8a6 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+#login-screen.hidden { display: none; }
+.login-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 25px 60px rgba(0,0,0,.25);
+}
+.dark .login-card { background: #1e293b; }
+.login-logo {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.75rem; color: white;
+  box-shadow: 0 8px 20px rgba(20,184,166,.4);
+}
+
+/* ── Modais ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: white; border-radius: 1.25rem;
+  width: 100%; max-width: 560px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0,0,0,.3);
+  transform: scale(.95); opacity: 0;
+  transition: transform .2s ease, opacity .2s ease;
+}
+.modal-box.scale-100.opacity-100 { transform: scale(1); opacity: 1; }
+.dark .modal-box { background: #1e293b; }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9;
+}
+.dark .modal-header { border-color: #334155; }
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: .75rem;
+  padding: 1rem 1.5rem; border-top: 1px solid #f1f5f9;
+}
+.dark .modal-footer { border-color: #334155; }
+
+/* ── Campos de formulário ── */
+.form-group { margin-bottom: 1rem; }
+.form-label {
+  display: block; font-size: .75rem; font-weight: 600;
+  color: #64748b; text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: .375rem;
+}
+.dark .form-label { color: #94a3b8; }
+.form-input {
+  width: 100%; padding: .5rem .75rem;
+  border: 1px solid #e2e8f0; border-radius: .625rem;
+  font-size: .875rem; color: #1e293b;
+  background: #f8fafc;
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-input:focus {
+  outline: none; border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20,184,166,.15);
+}
+.dark .form-input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+@media (max-width: 480px) { .form-grid-2 { grid-template-columns: 1fr; } }
+
+/* ── Botões ── */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .5rem 1.25rem; border-radius: .625rem;
+  background: #14b8a6; color: white; font-size: .875rem; font-weight: 600;
+  border: none; cursor: pointer;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(20,184,166,.35);
+}
+.btn-primary:hover { background: #0d9488; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20,184,166,.4); }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .5rem 1.25rem; border-radius: .625rem;
+  background: transparent; color: #64748b; font-size: .875rem; font-weight: 500;
+  border: 1px solid #e2e8f0; cursor: pointer;
+  transition: all .15s;
+}
+.btn-secondary:hover { background: #f8fafc; color: #1e293b; }
+.dark .btn-secondary { border-color: #334155; color: #94a3b8; }
+.dark .btn-secondary:hover { background: #334155; color: #e2e8f0; }
+
+.btn-icon {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .4rem .875rem; border-radius: .5rem;
+  font-size: .8rem; font-weight: 600; border: none; cursor: pointer;
+  transition: all .15s;
+}
+
+/* ── Toast Container ── */
+#toast-container {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  z-index: 9999;
+  display: flex; flex-direction: column; gap: .625rem;
+  max-width: 360px;
+}
+
+/* ── Indicador de status ── */
+.status-bar {
+  display: flex; align-items: center; gap: 1rem;
+  font-size: .75rem; color: #94a3b8;
+}
+
+/* ── Cabeçalhos de seção com ações ── */
+.section-header {
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.section-actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+}
+
+/* ── Badges de permissão ── */
+.perm-badge {
+  display: inline-flex; align-items: center; gap: .25rem;
+  padding: .2rem .6rem; border-radius: 9999px;
+  font-size: .7rem; font-weight: 600;
+}

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Comando - HMJLO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="scripts/tailwind.config.js"></script>
+    <link rel="stylesheet" href="estilos/global.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans antialiased flex h-screen overflow-hidden transition-colors duration-200">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="hidden">
+        <div class="login-card">
+            <div class="flex flex-col items-center mb-8">
+                <div class="login-logo mb-4"><i class="ph ph-activity"></i></div>
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">HMJLO</h1>
+                <p class="text-sm text-gray-500">Centro de Comando Unificado</p>
+            </div>
+            <form id="login-form" class="space-y-5">
+                <div id="login-error" class="hidden bg-red-50 text-red-600 text-sm p-3 rounded-xl border border-red-100 text-center"></div>
+                <div class="form-group">
+                    <label class="form-label">Usuário</label>
+                    <input type="text" id="login-usuario" class="form-input" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" id="login-senha" class="form-input" required autocomplete="current-password">
+                </div>
+                <button type="submit" id="login-btn" class="w-full btn-primary justify-center py-3 text-base mt-2">
+                    <i class="ph ph-sign-in text-lg"></i> Entrar no Sistema
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- APP SHELL -->
+    <div id="app-shell" class="flex flex-1 w-full h-full hidden">
+        <!-- Menu Lateral -->
+        <aside class="w-64 bg-white dark:bg-gray-800 shadow-xl hidden md:flex flex-col z-20 overflow-y-auto custom-scrollbar border-r border-gray-100 dark:border-gray-700">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-brand-500 text-white flex items-center justify-center font-bold text-xl shadow-md"><i class="ph ph-activity"></i></div>
+                    <div>
+                        <h1 class="font-bold text-gray-800 dark:text-gray-200 leading-tight">HMJLO</h1>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-wide">Centro de Comando</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div class="flex flex-col">
+                        <span id="user-nome" class="text-sm font-bold text-gray-700 dark:text-gray-300">Usuário</span>
+                        <span id="user-role-badge" class="text-[10px] text-brand-600 dark:text-brand-400 font-semibold">Perfil</span>
+                    </div>
+                    <button onclick="fazerLogout()" class="btn-icon text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sair"><i class="ph ph-sign-out"></i></button>
+                </div>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-1">
+                <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-2">Monitoramento</p>
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-900/30 transition-colors"><i class="ph ph-squares-four text-lg"></i> Visão Operacional</button>
+                <button onclick="switchTab('censo')" id="btn-censo" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-bed text-lg"></i> Censo Hospitalar</button>
+                
+                <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Fluxo & Resgates</p>
+                <button onclick="switchTab('ambulancias')" id="btn-ambulancias" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-ambulance text-lg"></i> Controle Ambulâncias</button>
+                <button onclick="switchTab('vacinas')" id="btn-vacinas" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-syringe text-lg"></i> Controle Vacinas DT</button>
+
+                <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Gestão de Dados</p>
+                <button onclick="switchTab('notificacoes')" id="btn-notificacoes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-warning text-lg"></i> Notificações</button>
+                <button onclick="switchTab('pacientes')" id="btn-pacientes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-users text-lg"></i> Base Pacientes</button>
+                <button onclick="switchTab('solucoes')" id="btn-solucoes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-stethoscope text-lg"></i> Soluções s/ Reg</button>
+
+                <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Administrativo</p>
+                <button onclick="switchTab('funcionarios')" id="btn-funcionarios" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-identification-badge text-lg"></i> Funcionários</button>
+                <button onclick="switchTab('extras')" id="btn-extras" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-currency-dollar text-lg"></i> Controle de Extras</button>
+                <button onclick="switchTab('viagens')" id="btn-viagens" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><i class="ph ph-car text-lg"></i> Viagens</button>
+                
+                <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Sistema</p>
+                <button onclick="switchTab('usuarios')" id="btn-usuarios" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" style="display:none;"><i class="ph ph-shield text-lg"></i> Gestão de Usuários</button>
+            </nav>
+            <div class="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                <div class="status-bar"><div id="status-dot" class="w-2 h-2 rounded-full bg-gray-300"></div><span id="status-txt">Verificando...</span></div>
+                <button onclick="toggleDarkMode()" id="btn-dark-mode" class="btn-icon text-gray-500 hover:text-brand-500" title="Alternar Modo Escuro"><i class="ph ph-moon text-lg"></i></button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-screen relative overflow-hidden bg-gray-50 dark:bg-gray-900">
+            <!-- Header Mobile -->
+            <header class="md:hidden bg-white dark:bg-gray-800 shadow-sm p-4 flex items-center justify-between z-10">
+                <div class="flex items-center gap-2"><div class="w-8 h-8 rounded bg-brand-500 text-white flex items-center justify-center font-bold"><i class="ph ph-activity"></i></div><h1 class="font-bold text-gray-800 dark:text-gray-200">HMJLO</h1></div>
+                <select onchange="switchTab(this.value)" class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-sm rounded-lg p-2 focus:ring-brand-500 max-w-[150px] dark:text-gray-200">
+                    <option value="dashboard">Visão Operacional</option>
+                    <option value="censo">Censo Hospitalar</option>
+                    <option value="ambulancias">Ambulâncias</option>
+                    <option value="vacinas">Vacinas DT</option>
+                    <option value="notificacoes">Notificações</option>
+                    <option value="pacientes">Base Pacientes</option>
+                    <option value="solucoes">Soluções s/ Reg</option>
+                    <option value="funcionarios">Funcionários</option>
+                    <option value="extras">Controle Extras</option>
+                    <option value="viagens">Viagens</option>
+                </select>
+                <button onclick="toggleDarkMode()" class="text-gray-500 p-2"><i class="ph ph-moon"></i></button>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative" id="main-scroll">
+                
+                <div id="loading-overlay" class="absolute inset-0 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+                    <i class="ph ph-spinner-gap animate-spin text-5xl text-brand-500 mb-4"></i>
+                    <p class="text-gray-600 dark:text-gray-400 font-medium">Sincronizando bases de dados...</p>
+                </div>
+
+                <div class="mb-4 flex justify-end text-xs text-gray-500 dark:text-gray-400">
+                    Atualização: <span id="ultima-atualizacao" class="font-bold mx-1">--:--</span> (Próxima em: <span id="refresh-countdown" class="font-bold ml-1 text-brand-600">05:00</span>)
+                </div>
+
+                <!-- 1. DASHBOARD CENTRAL -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Visão Operacional & Gargalos</h2>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Análise em tempo real de alertas críticos e fluxo de pacientes.</p>
+                        </div>
+                        <div class="section-actions">
+                            <button onclick="fetchData()" class="btn-secondary"><i class="ph ph-arrows-clockwise"></i> Atualizar Agora</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-2xl p-5 mb-8">
+                        <h3 class="text-red-800 dark:text-red-400 font-bold flex items-center gap-2 mb-4"><i class="ph ph-warning-circle text-xl"></i> Alertas de Travas Operacionais</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="alertas-container">
+                            <div class="text-sm text-red-600 dark:text-red-400">Aguardando dados reais...</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center text-2xl"><i class="ph ph-bed"></i></div>
+                            <div><p class="text-xs text-gray-500 font-bold uppercase">Pacientes no Censo</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100" id="kpi-internados">-</h3></div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 text-red-500 flex items-center justify-center text-2xl"><i class="ph ph-timer"></i></div>
+                            <div><p class="text-[11px] text-gray-500 font-bold uppercase leading-tight">Tempo Médio Resgate</p><h3 class="text-xl font-bold text-gray-800 dark:text-gray-100"><span id="kpi-tempo-resgate">-</span> min</h3></div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-500 flex items-center justify-center text-2xl"><i class="ph ph-warning"></i></div>
+                            <div><p class="text-xs text-gray-500 font-bold uppercase">Notificações Totais</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100" id="kpi-notif">-</h3></div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-500 flex items-center justify-center text-2xl"><i class="ph ph-users"></i></div>
+                            <div><p class="text-xs text-gray-500 font-bold uppercase">Base de Pacientes</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100" id="kpi-pacientes">-</h3></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-500 flex items-center justify-center text-2xl"><i class="ph ph-ambulance"></i></div>
+                            <div><p class="text-xs text-gray-500 font-bold uppercase">Resgates Realizados</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100" id="kpi-resgates">-</h3></div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-green-50 dark:bg-green-900/30 text-green-500 flex items-center justify-center text-2xl"><i class="ph ph-syringe"></i></div>
+                            <div><p class="text-xs text-gray-500 font-bold uppercase">Vacinas DT</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100" id="kpi-vacinas">-</h3></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"><h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 text-sm uppercase">Censo — Diagnósticos Principais</h3><div class="h-64 relative flex items-center justify-center"><canvas id="chart-censo-diag"></canvas></div></div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"><h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 text-sm uppercase">Ambulâncias — Tempo Médio por Condutor</h3><div class="h-64 relative flex items-center justify-center"><canvas id="chart-amb-tempo"></canvas></div></div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"><h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 text-sm uppercase">Notificações — Tipos de Agravo</h3><div class="h-64 relative flex items-center justify-center"><canvas id="chart-notif-tipos"></canvas></div></div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"><h3 class="font-bold text-gray-700 dark:text-gray-300 mb-4 text-sm uppercase">Ambulâncias — Situações das Ocorrências</h3><div class="h-64 relative flex items-center justify-center"><canvas id="chart-amb-situacoes"></canvas></div></div>
+                    </div>
+                </div>
+
+                <!-- 2. CENSO HOSPITALAR -->
+                <div id="tab-censo" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Censo Hospitalar (Internações)</h2>
+                        <div class="section-actions">
+                            <div id="filtro-data-censo"></div>
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('censo', this.value)" placeholder="Buscar no Censo..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.censo, 'Censo_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                            <button onclick="abrirFormCenso()" class="btn-primary btn-novo-registro"><i class="ph ph-plus"></i> Novo Internamento</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-sm whitespace-nowrap" id="tbl-censo">
+                                <thead class="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 uppercase text-[10px] font-bold tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-censo', 0)">Leito <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-censo', 1)">Paciente <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-censo', 2)">Data Internação <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4">Diagnóstico</th>
+                                        <th class="px-6 py-4">Médico Resp.</th>
+                                        <th class="px-6 py-4">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700" id="tabela-censo"></tbody>
+                            </table>
+                        </div>
+                        <div id="paginacao-censo"></div>
+                    </div>
+                </div>
+
+                <!-- 3. AMBULANCIAS -->
+                <div id="tab-ambulancias" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Controle de Ambulâncias</h2>
+                        <div class="section-actions">
+                            <div id="filtro-data-ambulancias"></div>
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('ambulancias', this.value)" placeholder="Buscar..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.ambulancias, 'Ambulancias_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                            <button onclick="abrirFormAmbulancia()" class="btn-primary btn-novo-registro"><i class="ph ph-plus"></i> Novo Resgate</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-sm whitespace-nowrap" id="tbl-ambulancias">
+                                <thead class="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 uppercase text-[10px] font-bold tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-ambulancias', 0)">Data/Hora <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4">Tempo Desloc.</th>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-ambulancias', 2)">Veículo/Condutor <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-ambulancias', 3)">Paciente/Local <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4">Situação</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700" id="tabela-ambulancias"></tbody>
+                            </table>
+                        </div>
+                        <div id="paginacao-ambulancias"></div>
+                    </div>
+                </div>
+
+                <!-- 4. VACINAS -->
+                <div id="tab-vacinas" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Controle Vacinas DT</h2>
+                        <div class="section-actions">
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('vacinas', this.value)" placeholder="Buscar..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.vacinas, 'Vacinas_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                            <button onclick="abrirFormVacina()" class="btn-primary btn-novo-registro"><i class="ph ph-plus"></i> Nova Vacina</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-sm whitespace-nowrap" id="tbl-vacinas">
+                                <thead class="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 uppercase text-[10px] font-bold tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-vacinas', 0)">Data/Mês <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-vacinas', 1)">Paciente <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4">Motivo</th>
+                                        <th class="px-6 py-4">Aplicador</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700" id="tabela-vacinas"></tbody>
+                            </table>
+                        </div>
+                        <div id="paginacao-vacinas"></div>
+                    </div>
+                </div>
+
+                <!-- 5. NOTIFICACOES -->
+                <div id="tab-notificacoes" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Registro de Notificações</h2>
+                        <div class="section-actions">
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('notificacoes', this.value)" placeholder="Buscar..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.notificacoes, 'Notificacoes_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                            <button onclick="abrirFormNotificacao()" class="btn-primary btn-novo-registro"><i class="ph ph-plus"></i> Nova Notificação</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-sm whitespace-nowrap" id="tbl-notificacoes">
+                                <thead class="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 uppercase text-[10px] font-bold tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-notificacoes', 0)">Data Notif. <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer" onclick="sortTable('tbl-notificacoes', 1)">Paciente <i class="ph ph-caret-up-down opacity-40 ml-1"></i></th>
+                                        <th class="px-6 py-4">Agravo / Tipo</th>
+                                        <th class="px-6 py-4">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700" id="tabela-notificacoes"></tbody>
+                            </table>
+                        </div>
+                        <div id="paginacao-notificacoes"></div>
+                    </div>
+                </div>
+
+                <!-- 6. PACIENTES -->
+                <div id="tab-pacientes" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Base de Pacientes</h2>
+                        <div class="section-actions">
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('pacientes', this.value)" placeholder="Buscar..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.pacientes, 'Pacientes_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                            <button onclick="abrirFormPaciente()" class="btn-primary btn-novo-registro"><i class="ph ph-plus"></i> Novo Paciente</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2" id="container-dinamico-pacientes"></div>
+                </div>
+
+                <!-- 7. SOLUCOES -->
+                <div id="tab-solucoes" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Soluções sem Regulação</h2>
+                        <div class="section-actions">
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('solucoes', this.value)" placeholder="Buscar..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.solucoes, 'Solucoes_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2" id="container-dinamico-solucoes"></div>
+                </div>
+
+                <!-- 8. EXTRAS -->
+                <div id="tab-extras" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Controle de Extras</h2>
+                        <div class="section-actions">
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('extras', this.value)" placeholder="Buscar..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.extras, 'Extras_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2" id="container-dinamico-extras"></div>
+                </div>
+
+                <!-- 9. VIAGENS -->
+                <div id="tab-viagens" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Registro de Viagens</h2>
+                        <div class="section-actions">
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('viagens', this.value)" placeholder="Buscar..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.viagens, 'Viagens_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                            <button onclick="abrirFormViagem()" class="btn-primary btn-novo-registro"><i class="ph ph-plus"></i> Nova Viagem</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2" id="container-dinamico-viagens"></div>
+                </div>
+
+                <!-- 10. FUNCIONARIOS -->
+                <div id="tab-funcionarios" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Funcionários HMJLO</h2>
+                        <div class="section-actions">
+                            <div class="relative w-full md:w-64">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" oninput="applyFilter('funcionarios', this.value)" placeholder="Buscar funcionário..." class="form-input pl-9 pr-3 py-1.5 w-full">
+                            </div>
+                            <button onclick="exportarCSV(filteredData.funcionarios, 'Funcionarios_HMJLO')" class="btn-secondary"><i class="ph ph-download-simple"></i> Exportar</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2" id="container-dinamico-funcionarios"></div>
+                </div>
+
+                <!-- 11. GESTÃO DE USUÁRIOS (MASTER) -->
+                <div id="tab-usuarios" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Gestão de Usuários</h2>
+                        <div class="section-actions">
+                            <button onclick="carregarUsuarios()" class="btn-secondary"><i class="ph ph-arrows-clockwise"></i> Atualizar</button>
+                            <button onclick="abrirModal('modal-novo-usuario'); document.getElementById('form-novo-usuario').reset();" class="btn-primary"><i class="ph ph-user-plus"></i> Novo Usuário</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-2">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 uppercase text-[10px] font-bold tracking-wider">
+                                    <tr><th class="px-6 py-4">Usuário</th><th class="px-6 py-4">Nome de Exibição</th><th class="px-6 py-4">Perfil</th><th class="px-6 py-4">Permissões</th><th class="px-6 py-4">Ações</th></tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700" id="tabela-usuarios"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toast-container"></div>
+
+    <!-- MODAIS DE FORMULÁRIO -->
+    <!-- Paciente -->
+    <div id="modal-paciente" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Novo Paciente</h3><button onclick="fecharModal('modal-paciente')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-paciente">
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Nome Completo *</label><input type="text" id="fp-nome" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">Código</label><input type="text" id="fp-codigo" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Data de Nascimento</label><input type="date" id="fp-nascimento" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Sexo</label>
+                            <select id="fp-sexo" class="form-input"><option value="M">Masculino</option><option value="F">Feminino</option><option value="Outro">Outro</option></select>
+                        </div>
+                        <div class="form-group"><label class="form-label">CNS</label><input type="text" id="fp-cns" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">CPF</label><input type="text" id="fp-cpf" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Nome da Mãe</label><input type="text" id="fp-mae" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Cidade</label><input type="text" id="fp-cidade" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Contato (Telefone)</label><input type="text" id="fp-contato" class="form-input"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="fecharModal('modal-paciente')" class="btn-secondary">Cancelar</button>
+                <button onclick="salvarPaciente()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ambulancia -->
+    <div id="modal-ambulancia" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Novo Registro de Ambulância</h3><button onclick="fecharModal('modal-ambulancia')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-ambulancia">
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Data</label><input type="text" id="fa-data" class="form-input" placeholder="DD/MM/YYYY"></div>
+                        <div class="form-group"><label class="form-label">Veículo / Ambulância</label><input type="text" id="fa-veiculo" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Hora Saída</label><input type="time" id="fa-hora-saida" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Hora Chegada</label><input type="time" id="fa-hora-chegada" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Condutor *</label><input type="text" id="fa-condutor" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">Nome do Paciente</label><input type="text" id="fa-paciente" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Local / Origem</label><input type="text" id="fa-local" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Tipo de Local</label><input type="text" id="fa-tipo-local" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Situação da Ocorrência</label>
+                            <select id="fa-situacao" class="form-input"><option value="Concluída">Concluída</option><option value="Em Andamento">Em Andamento</option><option value="Cancelada">Cancelada</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3"><label class="form-label">Observações</label><textarea id="fa-obs" class="form-input" rows="2"></textarea></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button onclick="fecharModal('modal-ambulancia')" class="btn-secondary">Cancelar</button><button onclick="salvarAmbulancia()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Vacina -->
+    <div id="modal-vacina" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Novo Registro de Vacina</h3><button onclick="fecharModal('modal-vacina')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-vacina">
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Mês/Data Referência</label><input type="text" id="fv-mes" class="form-input" placeholder="Ex: Jan/2026"></div>
+                        <div class="form-group"><label class="form-label">Código Paciente</label><input type="text" id="fv-codigo" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Nome do Paciente *</label><input type="text" id="fv-nome" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">CNS ou CPF</label><input type="text" id="fv-cnscpf" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Nascimento</label><input type="date" id="fv-nasc" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Motivo</label><input type="text" id="fv-motivo" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Profissional Aplicador</label><input type="text" id="fv-aplicador" class="form-input"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer"><button onclick="fecharModal('modal-vacina')" class="btn-secondary">Cancelar</button><button onclick="salvarVacina()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Notificacao -->
+    <div id="modal-notificacao" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Nova Notificação</h3><button onclick="fecharModal('modal-notificacao')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-notificacao">
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Data</label><input type="text" id="fn-data" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">CNS / CPF</label><input type="text" id="fn-cnscpf" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Nome do Paciente *</label><input type="text" id="fn-nome" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">Agravo</label><input type="text" id="fn-agravo" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Tipo de Notificação</label><input type="text" id="fn-tipo" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Situação</label>
+                            <select id="fn-situacao" class="form-input"><option value="Aberta">Aberta</option><option value="Em Andamento">Em Andamento</option><option value="Encerrada">Encerrada</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3"><label class="form-label">Observações</label><textarea id="fn-obs" class="form-input" rows="2"></textarea></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button onclick="fecharModal('modal-notificacao')" class="btn-secondary">Cancelar</button><button onclick="salvarNotificacao()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Censo -->
+    <div id="modal-censo" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Novo Internamento (Censo)</h3><button onclick="fecharModal('modal-censo')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-censo">
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Data Internação</label><input type="text" id="fc-data" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Leito / Quarto *</label><input type="text" id="fc-leito" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">Nome do Paciente *</label><input type="text" id="fc-nome" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">CNS / CPF</label><input type="text" id="fc-cnscpf" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Médico Responsável</label><input type="text" id="fc-medico" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Diagnóstico</label><input type="text" id="fc-diag" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Status</label>
+                            <select id="fc-status" class="form-input"><option value="Internado">Internado</option><option value="Alta">Alta</option><option value="Transferência">Transferência</option><option value="Óbito">Óbito</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3"><label class="form-label">Observações</label><textarea id="fc-obs" class="form-input" rows="2"></textarea></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button onclick="fecharModal('modal-censo')" class="btn-secondary">Cancelar</button><button onclick="salvarCenso()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Viagem -->
+    <div id="modal-viagem" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Nova Viagem</h3><button onclick="fecharModal('modal-viagem')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-viagem">
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Data</label><input type="text" id="fvg-data" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Veículo</label><input type="text" id="fvg-veiculo" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Hora Saída</label><input type="time" id="fvg-saida" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Hora Chegada</label><input type="time" id="fvg-chegada" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Motorista *</label><input type="text" id="fvg-motorista" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">Paciente/Resp.</label><input type="text" id="fvg-paciente" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Destino</label><input type="text" id="fvg-destino" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Finalidade</label><input type="text" id="fvg-finalidade" class="form-input"></div>
+                    </div>
+                    <div class="form-group mt-3"><label class="form-label">Observações</label><textarea id="fvg-obs" class="form-input" rows="2"></textarea></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button onclick="fecharModal('modal-viagem')" class="btn-secondary">Cancelar</button><button onclick="salvarViagem()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Modais de Usuário (Master) -->
+    <div id="modal-novo-usuario" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Novo Usuário</h3><button onclick="fecharModal('modal-novo-usuario')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-novo-usuario">
+                    <div class="form-group"><label class="form-label">Nome de Exibição *</label><input type="text" id="nu-nome" class="form-input" required placeholder="Ex: João Silva"></div>
+                    <div class="form-group"><label class="form-label">Login de Usuário *</label><input type="text" id="nu-usuario" class="form-input" required placeholder="Ex: joao.silva"></div>
+                    <div class="form-group"><label class="form-label">Senha Inicial *</label><input type="password" id="nu-senha" class="form-input" required></div>
+                    <div class="form-group"><label class="form-label">Perfil</label>
+                        <select id="nu-role" class="form-input"><option value="usuario">Usuário Comum</option><option value="master">Master</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Permissões Especiais</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="checkbox" value="visualizar" class="nu-perm" checked disabled> Visualizar (Padrão)</label>
+                            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="checkbox" value="editar" class="nu-perm"> Adicionar Registros</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer"><button onclick="fecharModal('modal-novo-usuario')" class="btn-secondary">Cancelar</button><button onclick="salvarNovoUsuario()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Criar Usuário</button></div>
+        </div>
+    </div>
+
+    <div id="modal-editar-usuario" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header"><h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Editar Usuário</h3><button onclick="fecharModal('modal-editar-usuario')" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="modal-body">
+                <form id="form-editar-usuario">
+                    <input type="hidden" id="eu-usuario">
+                    <div class="form-group"><label class="form-label">Nome de Exibição *</label><input type="text" id="eu-nome" class="form-input" required></div>
+                    <div class="form-group"><label class="form-label">Nova Senha</label><input type="password" id="eu-nova-senha" class="form-input" placeholder="Deixe em branco para não alterar"></div>
+                    <div class="form-group"><label class="form-label">Perfil</label>
+                        <select id="eu-role" class="form-input"><option value="usuario">Usuário Comum</option><option value="master">Master</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Permissões Especiais</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="checkbox" value="visualizar" class="eu-perm" checked disabled> Visualizar (Padrão)</label>
+                            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="checkbox" value="editar" class="eu-perm"> Adicionar Registros</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer"><button onclick="fecharModal('modal-editar-usuario')" class="btn-secondary">Cancelar</button><button onclick="salvarEdicaoUsuario()" class="btn-primary btn-salvar"><i class="ph ph-check"></i> Atualizar Usuário</button></div>
+        </div>
+    </div>
+
+    <!-- Scripts da aplicação -->
+    <script src="scripts/config.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/forms.js"></script>
+    <script src="scripts/main.js"></script>
+
+    <!-- Inicializar filtros de data -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fdCenso = document.getElementById('filtro-data-censo');
+            if(fdCenso) fdCenso.innerHTML = renderFiltroData('censo', 'renderCenso', 'Internação');
+            const fdAmb = document.getElementById('filtro-data-ambulancias');
+            if(fdAmb) fdAmb.innerHTML = renderFiltroData('ambulancias', 'renderAmbulancias', 'Data');
+        });
+    </script>
+</body>
+</html>
