@@ -19,12 +19,12 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSU_3w3DRu-tTF
 const GID_PACIENTES = "1383837979";
 const GID_VACINAS = "0";
 const GID_AMBULANCIAS = "1792104572";
-const GID_NOTIFICACOES = "2102365928";
+const GID_NOTIFICACOES = "1747808862";
 const GID_SOLUCOES = "206556296";
 const GID_CENSO = "914372478";
 const GID_EXTRAS = "1794923732";
 const GID_VIAGENS = "1083527311";
-const GID_FUNCIONARIOS = ""; // ← Preencha o GID da aba Funcionários
+const GID_FUNCIONARIOS = "2102365928";
 
 // Nomes exatos das abas na planilha (para escrita via Apps Script)
 const ABA_PACIENTES = "Pacientes";
