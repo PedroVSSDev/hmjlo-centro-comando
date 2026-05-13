@@ -5,9 +5,43 @@
 
 let rawData = {
   vacinas:[], ambulancias:[], censo:[], notificacoes:[],
-  pacientes:[], solucoes:[], extras:[], viagens:[], funcionarios:[]
+  pacientes:[], solucoes:[], extras:[], viagens:[], funcionarios:[], obstetricia:[]
 };
 let filteredData = { ...rawData };
+
+// ── Filtros Avançados ──
+window.filtrosAvancados = {}; // { pacientes: { Sexo: 'F', Status: 'Ativo' } }
+
+function aplicarFiltrosAvancados(key, dadosAFiltrar) {
+  let result = dadosAFiltrar;
+  if (window.filtrosAvancados[key]) {
+    for (const [coluna, valor] of Object.entries(window.filtrosAvancados[key])) {
+      if (valor !== '') {
+        result = result.filter(row => String(row[coluna] || '').toLowerCase().trim() === String(valor).toLowerCase().trim());
+      }
+    }
+  }
+  return result;
+}
+
+window.renderFiltroOpcoes = function(key, colunaNome, elementoId) {
+  const container = document.getElementById(elementoId);
+  if (!container || !rawData[key] || !rawData[key].length) return;
+  
+  // Extrair valores únicos
+  const valores = [...new Set(rawData[key].map(r => String(r[colunaNome] || '').trim()))].filter(v => v);
+  if (!valores.length) return;
+
+  const atual = (window.filtrosAvancados[key] && window.filtrosAvancados[key][colunaNome]) || '';
+  
+  container.innerHTML = `
+    <select onchange="window.filtrosAvancados['${key}'] = window.filtrosAvancados['${key}'] || {}; window.filtrosAvancados['${key}']['${colunaNome}'] = this.value; setPagina('${key}',1); renderAllTables();"
+      class="border border-gray-200 dark:border-gray-600 rounded-lg text-xs p-1.5 bg-white dark:bg-gray-700 dark:text-gray-200 max-w-[150px]">
+      <option value="">Filtro: ${colunaNome} (Todos)</option>
+      ${valores.sort().map(v => `<option value="${v}" ${atual === v ? 'selected' : ''}>${v}</option>`).join('')}
+    </select>
+  `;
+};
 
 // ── Navegação ──
 function switchTab(tabId) {
@@ -52,7 +86,14 @@ async function fetchData() {
     return new Promise(resolve => {
       Papa.parse(getURL(gid), {
         download:true, header:true, skipEmptyLines:true,
-        complete: r => { if (r.data?.length) rawData[key] = r.data.reverse(); resolve(); },
+        complete: r => { 
+          if (r.data?.length) {
+            // A linha 1 é o cabeçalho. Então o index 0 dos dados é a Linha 2 do Google Sheets.
+            r.data.forEach((row, index) => { row._rowIndex = index + 2; });
+            rawData[key] = r.data.reverse(); 
+          }
+          resolve(); 
+        },
         error: () => resolve()
       });
     });
@@ -68,6 +109,7 @@ async function fetchData() {
     fetchSheet(GID_EXTRAS,'extras'),
     fetchSheet(GID_VIAGENS,'viagens'),
     fetchSheet(GID_FUNCIONARIOS,'funcionarios'),
+    fetchSheet(GID_OBSTETRICIA,'obstetricia'),
   ]);
 
   for (let k in rawData) filteredData[k] = [...rawData[k]];
@@ -127,12 +169,18 @@ function updateKPIs() {
 
 // ── Render centralizado ──
 function renderAllTables() {
+  // Inicializar Filtros Dinâmicos
+  window.renderFiltroOpcoes('vacinas', 'Sexo', 'filtro-sexo-vacinas');
+  window.renderFiltroOpcoes('funcionarios', 'Situação de Vínculo', 'filtro-status-funcionarios');
+  window.renderFiltroOpcoes('funcionarios', 'Registro Classe', 'filtro-classe-funcionarios');
+
   renderCenso(); renderAmbulancias(); renderVacinas(); renderNotificacoes();
   renderDynamic('container-dinamico-pacientes','pacientes');
   renderDynamic('container-dinamico-solucoes','solucoes');
   renderDynamic('container-dinamico-extras','extras');
   renderDynamic('container-dinamico-viagens','viagens');
   renderDynamic('container-dinamico-funcionarios','funcionarios');
+  renderDynamic('container-dinamico-obstetricia','obstetricia');
 }
 
 const emptyRow = (cols=6) => `<tr><td colspan="${cols}" class="px-6 py-6 text-center text-gray-400 dark:text-gray-500">Nenhum registro encontrado.</td></tr>`;
@@ -152,6 +200,10 @@ function renderCenso() {
       <td class="px-6 py-3 dark:text-gray-300">${diag}</td>
       <td class="px-6 py-3 dark:text-gray-300">${med}</td>
       <td class="px-6 py-3"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs dark:bg-blue-900/30 dark:text-blue-300">${st}</span></td>
+      <td class="px-6 py-3">
+        <button onclick="preencherFormularioEditar('censo', ${c._rowIndex})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="ph ph-pencil-simple"></i></button>
+        <button onclick="excluirRegistro(ABA_CENSO, ${c._rowIndex}, () => fetchData())" class="text-red-500 hover:text-red-700"><i class="ph ph-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
   renderPaginacao('censo', filteredData.censo, 'renderAllTables');
@@ -175,6 +227,10 @@ function renderAmbulancias() {
       <td class="px-6 py-3 dark:text-gray-200">${vei}<br><span class="text-xs text-gray-500">${cond}</span></td>
       <td class="px-6 py-3 font-medium dark:text-gray-200">${pac}<br><span class="text-xs font-normal text-gray-500">${loc}</span></td>
       <td class="px-6 py-3"><span class="bg-green-50 text-green-700 px-2 py-1 rounded text-xs dark:bg-green-900/30 dark:text-green-300">${sit}</span></td>
+      <td class="px-6 py-3">
+        <button onclick="preencherFormularioEditar('ambulancias', ${a._rowIndex})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="ph ph-pencil-simple"></i></button>
+        <button onclick="excluirRegistro(ABA_AMBULANCIAS, ${a._rowIndex}, () => fetchData())" class="text-red-500 hover:text-red-700"><i class="ph ph-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
   renderPaginacao('ambulancias', filteredData.ambulancias, 'renderAllTables');
@@ -182,17 +238,22 @@ function renderAmbulancias() {
 
 function renderVacinas() {
   const tb = document.getElementById('tabela-vacinas'); if (!tb) return;
-  const data = getPaginados('vacinas', filteredData.vacinas);
-  if (!data.length) { tb.innerHTML = emptyRow(4); renderPaginacao('vacinas', filteredData.vacinas, 'renderAllTables'); return; }
+  const dataAFiltrar = aplicarFiltrosAvancados('vacinas', filteredData.vacinas);
+  const data = getPaginados('vacinas', dataAFiltrar);
+  if (!data.length) { tb.innerHTML = emptyRow(5); renderPaginacao('vacinas', dataAFiltrar, 'renderAllTables'); return; }
   tb.innerHTML = data.map(v => {
     const dt=getColValue(v,['mês referência','mes','data']), pac=getColValue(v,['nome do paciente','nome']),
       mot=getColValue(v,['motivo','motivo da aplicacao']), ap=getColValue(v,['profissional aplicador','aplicador']);
     return `<tr class="hover:bg-brand-50/40 dark:hover:bg-gray-700/30">
       <td class="px-6 py-3 dark:text-gray-300">${dt}</td><td class="px-6 py-3 font-medium dark:text-gray-200">${pac}</td>
       <td class="px-6 py-3 dark:text-gray-300">${mot}</td><td class="px-6 py-3 dark:text-gray-300">${ap}</td>
+      <td class="px-6 py-3">
+        <button onclick="preencherFormularioEditar('vacinas', ${v._rowIndex})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="ph ph-pencil-simple"></i></button>
+        <button onclick="excluirRegistro(ABA_VACINAS, ${v._rowIndex}, () => fetchData())" class="text-red-500 hover:text-red-700"><i class="ph ph-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
-  renderPaginacao('vacinas', filteredData.vacinas, 'renderAllTables');
+  renderPaginacao('vacinas', dataAFiltrar, 'renderAllTables');
 }
 
 function renderNotificacoes() {
@@ -206,6 +267,10 @@ function renderNotificacoes() {
       <td class="px-6 py-3 dark:text-gray-300">${dt}</td><td class="px-6 py-3 font-medium dark:text-gray-200">${pac}</td>
       <td class="px-6 py-3 dark:text-gray-300">${tp}</td>
       <td class="px-6 py-3"><span class="bg-orange-50 text-orange-700 px-2 py-1 rounded text-xs font-bold dark:bg-orange-900/30 dark:text-orange-300">${st}</span></td>
+      <td class="px-6 py-3">
+        <button onclick="preencherFormularioEditar('notificacoes', ${n._rowIndex})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="ph ph-pencil-simple"></i></button>
+        <button onclick="excluirRegistro(ABA_NOTIFICACOES, ${n._rowIndex}, () => fetchData())" class="text-red-500 hover:text-red-700"><i class="ph ph-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
   renderPaginacao('notificacoes', filteredData.notificacoes, 'renderAllTables');
@@ -213,21 +278,30 @@ function renderNotificacoes() {
 
 function renderDynamic(containerId, key) {
   const c = document.getElementById(containerId); if (!c) return;
-  const data = getPaginados(key, filteredData[key]);
+  const data = getPaginados(key, aplicarFiltrosAvancados(key, filteredData[key]));
   if (!filteredData[key].length) {
     c.innerHTML = '<div class="p-8 text-center text-gray-400 dark:text-gray-500">Nenhum registro encontrado. Adicione dados na planilha.</div>';
     return;
   }
-  const headers = Object.keys(filteredData[key][0]);
+  const headers = Object.keys(filteredData[key][0]).filter(h => h !== '_rowIndex');
   c.innerHTML = `<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-sm whitespace-nowrap">
     <thead class="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 uppercase text-[10px] font-bold tracking-wider">
-      <tr>${headers.map((h,i) => `<th class="px-6 py-4 cursor-pointer hover:text-brand-600" onclick="sortTableData('${key}',${i},'${containerId}')">${h}<i class="ph ph-caret-up-down ml-1 opacity-40"></i></th>`).join('')}</tr>
+      <tr>
+        ${headers.map((h,i) => `<th class="px-6 py-4 cursor-pointer hover:text-brand-600" onclick="sortTableData('${key}',${i},'${containerId}')">${h}<i class="ph ph-caret-up-down ml-1 opacity-40"></i></th>`).join('')}
+        <th class="px-6 py-4">Ações</th>
+      </tr>
     </thead>
     <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
-      ${data.map(row => `<tr class="hover:bg-brand-50/40 dark:hover:bg-gray-700/30">${headers.map(h => `<td class="px-6 py-3">${row[h]||'-'}</td>`).join('')}</tr>`).join('')}
+      ${data.map(row => `<tr class="hover:bg-brand-50/40 dark:hover:bg-gray-700/30">
+        ${headers.map(h => `<td class="px-6 py-3">${row[h]||'-'}</td>`).join('')}
+        <td class="px-6 py-3">
+          <button onclick="preencherFormularioEditar('${key}', ${row._rowIndex})" class="text-blue-500 hover:text-blue-700 mr-2" title="Editar"><i class="ph ph-pencil-simple"></i></button>
+          <button onclick="excluirRegistro(ABA_${key.toUpperCase()}, ${row._rowIndex}, () => fetchData())" class="text-red-500 hover:text-red-700" title="Excluir"><i class="ph ph-trash"></i></button>
+        </td>
+      </tr>`).join('')}
     </tbody>
   </table></div>`;
-  renderPaginacao(key, filteredData[key], 'renderAllTables');
+  renderPaginacao(key, aplicarFiltrosAvancados(key, filteredData[key]), 'renderAllTables');
 }
 
 // Sort para tabelas dinâmicas

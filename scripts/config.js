@@ -12,7 +12,7 @@ const SHEET_ID = "1EaupCiKZHv1LI6x0jDQVGAjCPV5g63s2k3l00581C1A";
 // URL do Apps Script (preencha após a implantação)
 // Exemplo: "https://script.google.com/macros/s/XXXXX/exec"
 // ▼▼▼ COLE SUA URL AQUI (entre as aspas) ▼▼▼
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSU_3w3DRu-tTF-yEHhXoxck8Jd9445r_zmcXo8OFp75oTupl7ao4a32WfMWtuCN45JA/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5LmJDBOVJPDjVsGEVkUtAl5kYLQ5YhEg9M73NdjDNjXN5weqsmk9CV7-d7daEhMeY4A/exec"
 // Exemplo: const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycb.../exec";
 
 // GIDs de cada aba da planilha
@@ -25,6 +25,7 @@ const GID_CENSO = "914372478";
 const GID_EXTRAS = "1794923732";
 const GID_VIAGENS = "1083527311";
 const GID_FUNCIONARIOS = "2102365928";
+const GID_OBSTETRICIA = "1426055376";
 
 // Nomes exatos das abas na planilha (para escrita via Apps Script)
 const ABA_PACIENTES = "Pacientes";
@@ -36,6 +37,7 @@ const ABA_CENSO = "Censo Hospitalar";
 const ABA_EXTRAS = "Extras";
 const ABA_VIAGENS = "Viagens";
 const ABA_FUNCIONARIOS = "Funcionários HMJLO";
+const ABA_OBSTETRICIA = "Ocorrências Obstétricas";
 
 // Limite de linhas por página nas tabelas
 const LIMITE_TABELA = 50;
