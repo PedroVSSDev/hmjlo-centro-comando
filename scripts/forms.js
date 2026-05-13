@@ -34,14 +34,14 @@ function abrirFormPaciente() {
 
 async function salvarPaciente() {
   const dados = {
-    'Código Paciente': document.getElementById('fp-codigo').value,
+    'Código Cadastro': document.getElementById('fp-codigo').value,
     'Nome do Paciente': document.getElementById('fp-nome').value,
-    'Nascimento': document.getElementById('fp-nascimento').value,
+    'Data Nascimento': document.getElementById('fp-nascimento').value,
     'CNS': document.getElementById('fp-cns').value,
     'CPF': document.getElementById('fp-cpf').value,
     'Sexo': document.getElementById('fp-sexo').value,
     'Nome da Mãe': document.getElementById('fp-mae').value,
-    'Cidade': document.getElementById('fp-cidade').value,
+    'CIdade': document.getElementById('fp-cidade').value,
     'Contato': document.getElementById('fp-contato').value,
   };
   if (!dados['Nome do Paciente']) { showToast('Nome do paciente é obrigatório.', 'warn'); return; }
@@ -60,7 +60,7 @@ function abrirFormAmbulancia() {
 
 async function salvarAmbulancia() {
   const dados = {
-    'DD/MM/YYYY': document.getElementById('fa-data').value,
+    'Data': document.getElementById('fa-data').value,
     'Hora Saída': document.getElementById('fa-hora-saida').value,
     'Hora Chegada': document.getElementById('fa-hora-chegada').value,
     'Condutor': document.getElementById('fa-condutor').value,
@@ -68,8 +68,7 @@ async function salvarAmbulancia() {
     'Nome do Paciente': document.getElementById('fa-paciente').value,
     'Local Ocorrência': document.getElementById('fa-local').value,
     'Tipo de Local': document.getElementById('fa-tipo-local').value,
-    'Situação da Ocorrência': document.getElementById('fa-situacao').value,
-    'Observações': document.getElementById('fa-obs').value,
+    'Situação da Ocorrência': document.getElementById('fa-situacao').value
   };
   if (!dados['Condutor']) { showToast('Condutor é obrigatório.', 'warn'); return; }
   await enviarFormulario(ABA_AMBULANCIAS, dados, 'modal-ambulancia', () => fetchData());
@@ -86,11 +85,11 @@ function abrirFormVacina() {
 
 async function salvarVacina() {
   const dados = {
-    'Mês Referência': document.getElementById('fv-mes').value,
-    'Código Paciente': document.getElementById('fv-codigo').value,
+    'Mês referência': document.getElementById('fv-mes').value,
+    'Código da aplicação': document.getElementById('fv-codigo').value,
     'Nome do Paciente': document.getElementById('fv-nome').value,
-    'CNS/CPF': document.getElementById('fv-cnscpf').value,
-    'Nascimento': document.getElementById('fv-nasc').value,
+    'CNS ou CPF': document.getElementById('fv-cnscpf').value,
+    'Data Nasc.': document.getElementById('fv-nasc').value,
     'Motivo': document.getElementById('fv-motivo').value,
     'Profissional Aplicador': document.getElementById('fv-aplicador').value,
   };
@@ -134,14 +133,13 @@ function abrirFormCenso() {
 
 async function salvarCenso() {
   const dados = {
-    'Data': document.getElementById('fc-data').value,
+    'Data Internação': document.getElementById('fc-data').value,
     'Leito': document.getElementById('fc-leito').value,
-    'CNS/CPF': document.getElementById('fc-cnscpf').value,
+    'CNS ou CPF': document.getElementById('fc-cnscpf').value,
     'Nome do Paciente': document.getElementById('fc-nome').value,
     'Médico': document.getElementById('fc-medico').value,
     'Diagnóstico': document.getElementById('fc-diag').value,
-    'Status': document.getElementById('fc-status').value,
-    'Observações': document.getElementById('fc-obs').value,
+    'Situação': document.getElementById('fc-status').value
   };
   if (!dados['Leito'] || !dados['Nome do Paciente']) { showToast('Leito e Paciente são obrigatórios.', 'warn'); return; }
   await enviarFormulario(ABA_CENSO, dados, 'modal-censo', () => fetchData());

@@ -12,7 +12,7 @@ const SHEET_ID = "1EaupCiKZHv1LI6x0jDQVGAjCPV5g63s2k3l00581C1A";
 // URL do Apps Script (preencha após a implantação)
 // Exemplo: "https://script.google.com/macros/s/XXXXX/exec"
 // ▼▼▼ COLE SUA URL AQUI (entre as aspas) ▼▼▼
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwu55lICRjlktgMZn161Rax2dwpq4qIHeqYA1aYOd6d5v4mHRaqRIMQ_yjLa9tFxI6OLA/exec"
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_fS8E2tQ8M0rxzBt8tA6JcLSAjY72tdHEycLOdtgBEF7ywLjw-bs60hpKcBKmHg48SA/exec"
 // Exemplo: const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycb.../exec";
 
 // GIDs de cada aba da planilha
