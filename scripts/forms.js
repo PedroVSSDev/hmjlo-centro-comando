@@ -32,11 +32,17 @@ function abrirFormPaciente() {
   abrirModal('modal-paciente');
 }
 
+const fData = (val) => {
+  if (!val) return '';
+  const [y, m, d] = val.split('-');
+  return y && m && d ? `${d}/${m}/${y}` : val;
+};
+
 async function salvarPaciente() {
   const dados = {
     'Código Cadastro': document.getElementById('fp-codigo').value,
     'Nome do Paciente': document.getElementById('fp-nome').value,
-    'Data Nascimento': document.getElementById('fp-nascimento').value,
+    'Data Nascimento': fData(document.getElementById('fp-nascimento').value),
     'CNS': document.getElementById('fp-cns').value,
     'CPF': document.getElementById('fp-cpf').value,
     'Sexo': document.getElementById('fp-sexo').value,
@@ -89,7 +95,7 @@ async function salvarVacina() {
     'Código da aplicação': document.getElementById('fv-codigo').value,
     'Nome do Paciente': document.getElementById('fv-nome').value,
     'CNS ou CPF': document.getElementById('fv-cnscpf').value,
-    'Data Nasc.': document.getElementById('fv-nasc').value,
+    'Data Nasc.': fData(document.getElementById('fv-nasc').value),
     'Motivo': document.getElementById('fv-motivo').value,
     'Profissional Aplicador': document.getElementById('fv-aplicador').value,
   };
@@ -103,13 +109,13 @@ async function salvarVacina() {
 function abrirFormNotificacao() {
   if (!temPermissao('editar')) { showToast('Sem permissão.', 'error'); return; }
   document.getElementById('form-notificacao').reset();
-  document.getElementById('fn-data').value = new Date().toLocaleDateString('pt-BR');
+  document.getElementById('fn-data').value = new Date().toISOString().split('T')[0];
   abrirModal('modal-notificacao');
 }
 
 async function salvarNotificacao() {
   const dados = {
-    'Data': document.getElementById('fn-data').value,
+    'Data': fData(document.getElementById('fn-data').value),
     'CNS/CPF': document.getElementById('fn-cnscpf').value,
     'Nome do Paciente': document.getElementById('fn-nome').value,
     'Agravo': document.getElementById('fn-agravo').value,
@@ -127,7 +133,7 @@ async function salvarNotificacao() {
 function abrirFormCenso() {
   if (!temPermissao('editar')) { showToast('Sem permissão.', 'error'); return; }
   document.getElementById('form-censo').reset();
-  document.getElementById('fc-data').value = new Date().toLocaleDateString('pt-BR');
+  document.getElementById('fc-data').value = new Date().toISOString().split('T')[0];
   abrirModal('modal-censo');
 }
 
