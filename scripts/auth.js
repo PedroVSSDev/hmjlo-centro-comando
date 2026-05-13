@@ -171,6 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (res.ok) {
       mostrarApp();
+      if (typeof fetchData === 'function') {
+        fetchData();
+        iniciarAutoRefresh(fetchData);
+        verificarConexao();
+      }
     } else {
       err.textContent = res.erro || 'Erro desconhecido.';
       err.classList.remove('hidden');
